@@ -36,6 +36,7 @@ public class SpawnLayer {
 	int toY;
 	int fromZ = -100000;
 	int toZ = 100000;
+	private int priority = 0;
 	public boolean blockNaturalSpawn = true;
 	public final List<EntitySpawnDefinition> spawnList = new ArrayList<EntitySpawnDefinition>();
 	public final List<Class<? extends Entity>> blackList = new ArrayList<Class<? extends Entity>>();
@@ -58,6 +59,8 @@ public class SpawnLayer {
 				fromZ = reader.nextInt();
 			} else if (name.equals("toZ")) {
 				toZ = reader.nextInt();
+			} else if (name.equals("priority")) {
+				setPriority(reader.nextInt());
 			} else if (name.equals("exclude_biomes")) {
 				reader.beginArray();
 				while (reader.hasNext()) {
@@ -223,5 +226,13 @@ public class SpawnLayer {
 	@Override
 	public String toString() {
         return "spawnLayer[" + this.fromX + ", " + this.fromY + ", " + this.fromZ + " -> " + this.toX + ", " + this.toY + ", " + this.toZ + "]";
+	}
+
+	public int getPriority() {
+		return priority;
+	}
+
+	public void setPriority(int priority) {
+		this.priority = priority;
 	}
 }

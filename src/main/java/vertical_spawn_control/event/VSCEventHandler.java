@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -31,6 +32,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
 import vertical_spawn_control.VSCMod;
 import vertical_spawn_control.entity.SpawnLayer;
+import vertical_spawn_control.entity.SpawnLayerPriorityComparator;
 import vertical_spawn_control.entity.ai.EnumEntityAIModificatorAction;
 import vertical_spawn_control.entity.ai.modificator.EntityAIModificator;
 
@@ -105,6 +107,7 @@ public class VSCEventHandler {
 			try {
 				List<SpawnLayer> layers = new ArrayList<SpawnLayer>();
 				this.readFromJSON(settings,layers);
+				layers.sort(new SpawnLayerPriorityComparator());
 				spawnLayers2Dimension.put(event.getWorld().provider.getDimension(), layers);
 				VSCMod.logger.info("Loading settings provided at " + settings.getAbsolutePath());
 			} catch (IOException e) {
@@ -140,7 +143,7 @@ public class VSCEventHandler {
 		int ssize = spawnLayers.size();
 		if (ssize == 0)
 			return;
-		for (SpawnLayer spawnLayer : spawnLayers) {
+		next_spawn_layer:for (SpawnLayer spawnLayer : spawnLayers) {
 			Iterator<CubeWatcher> cwi = playerCubeMap.getRandomWrappedCubeWatcherIterator(event.world.rand.nextInt());
 			int spawnAttempts = 16;
 			while (cwi.hasNext() && --spawnAttempts > 0) {
@@ -159,11 +162,14 @@ public class VSCEventHandler {
 				int posZMin = Coords.cubeToMinBlock(cposZ);
 				int posZMax = Coords.cubeToMaxBlock(cposZ);
 				BlockPos pos = new BlockPos(posXMin, posYMin, posZMin);
+				int priority = Integer.MIN_VALUE;
 				if (spawnLayer.isIntersectsY(posYMin, posYMax) && spawnLayer.isIntersectsX(posXMin, posXMax)
 						&& spawnLayer.isIntersectsZ(posZMin, posZMax)
 						&& spawnLayer.isEffectiveAtBiomeAtPos(event.world, pos)) {
+					if (spawnLayer.getPriority() < priority)
+						break next_spawn_layer;
+					priority = spawnLayer.getPriority();
 					spawnLayer.onCubeLoad(event.world, pos);
-					break;
 				}
 			}
 		}

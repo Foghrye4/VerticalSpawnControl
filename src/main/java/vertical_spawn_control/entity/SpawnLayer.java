@@ -37,6 +37,7 @@ public class SpawnLayer {
 	int fromZ = -100000;
 	int toZ = 100000;
 	private int priority = 0;
+	private int playerSeekRange = 24;
 	public boolean blockNaturalSpawn = true;
 	public final List<EntitySpawnDefinition> spawnList = new ArrayList<EntitySpawnDefinition>();
 	public final List<Class<? extends Entity>> blackList = new ArrayList<Class<? extends Entity>>();
@@ -61,6 +62,8 @@ public class SpawnLayer {
 				toZ = reader.nextInt();
 			} else if (name.equals("priority")) {
 				setPriority(reader.nextInt());
+			} else if (name.equals("playerSeekRange")) {
+				playerSeekRange = reader.nextInt();
 			} else if (name.equals("exclude_biomes")) {
 				reader.beginArray();
 				while (reader.hasNext()) {
@@ -117,7 +120,7 @@ public class SpawnLayer {
 	}
 
 	public void onCubeLoad(World world, BlockPos blockPos) {
-		EntityPlayer player = world.getClosestPlayer(blockPos.getX(), blockPos.getY(), blockPos.getZ(), 24, false);
+		EntityPlayer player = world.getClosestPlayer(blockPos.getX(), blockPos.getY(), blockPos.getZ(), playerSeekRange, false);
 		if (player != null) {
 			return;
 		}
